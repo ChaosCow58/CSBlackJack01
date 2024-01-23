@@ -8,6 +8,7 @@ namespace CSBlackJack01
 {
     internal class Program
     {
+        // TODO: Keep track of how much money each player has
         static int numOfPlayers = 0;
 
         static List<int> playersOutOfRound = new List<int>();
