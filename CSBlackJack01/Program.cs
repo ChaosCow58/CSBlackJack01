@@ -36,7 +36,7 @@ namespace CSBlackJack01
                     Console.Write("How many players (Max 7)? ");
                     numOfPlayers = Convert.ToInt32(Console.ReadLine());
                 }
-                catch (FormatException)
+                catch
                 {
                     Console.WriteLine("Invalid input. Please enter a valid number.");
                 }
@@ -45,7 +45,7 @@ namespace CSBlackJack01
             InitGame();
 
             while (true)
-            {
+            { 
                 // Display player information and options
                 foreach (KeyValuePair<int, int> chips in playersBetts)
                 {
@@ -109,7 +109,7 @@ namespace CSBlackJack01
                         {
                             userInput = Convert.ToInt32(Console.ReadLine());
                         }
-                        catch (FormatException)
+                        catch
                         {
                             goto userInput;
                         }
@@ -118,29 +118,29 @@ namespace CSBlackJack01
                         switch (userInput)
                         {
                             case 1:
-                                // Handle Hit
-                                // ...
+                                Console.WriteLine("dddddd");
+                                Hit();
                                 break;
                             case 2:
+                                // Stand
                                 break;
                             case 3:
-                                // Handle Double
-                                // ...
+                                Double();
                                 break;
-                            // Add cases for other options as needed
-                            // ...
+                            case 4:
+                                Split();
+                                break;
                             default:
                                 Console.Clear();
                                 goto end;
-
                         }
                     }
                 }
-                
+
                 Console.Clear();
                 break;
-
             }
+         
 
             end:
             Console.WriteLine("Press any key to exit...");
@@ -187,7 +187,7 @@ namespace CSBlackJack01
                     Console.Write("  How much do you want to bet (-1 to sit out): ");
                     numBetted = Convert.ToInt32(Console.ReadLine());
                 }
-                catch (FormatException)
+                catch
                 {
                     Console.WriteLine("Invalid input. Please enter a valid number.");
                     goto userInput;
@@ -200,7 +200,7 @@ namespace CSBlackJack01
                         Console.Write("  How much do you want to bet (-1 to sit out): ");
                         numBetted = Convert.ToInt32(Console.ReadLine());
                     }
-                    catch (FormatException)
+                    catch
                     {
                         Console.WriteLine("Invalid input. Please enter a valid number.");
                     }
@@ -263,7 +263,7 @@ namespace CSBlackJack01
                         Console.WriteLine("Dealer has a blackjack.");
                         Console.ResetColor();
 
-                        foreach (KeyValuePair<int, int> chips in playersBetts)
+                        foreach (KeyValuePair<int, int> chips in playersBetts.ToList())
                         {
                             if (chips.Value != -1)
                             {
@@ -283,7 +283,7 @@ namespace CSBlackJack01
                         Console.WriteLine("Dealer has a blackjack.");
                         Console.ResetColor();
 
-                        foreach (KeyValuePair<int, int> chips in playersBetts)
+                        foreach (KeyValuePair<int, int> chips in playersBetts.ToList())
                         {
                             if (chips.Value != -1)
                             {
@@ -351,6 +351,27 @@ namespace CSBlackJack01
                     }
                 }
             }
+        }
+
+        static void Hit()
+        {
+            Console.Clear();
+            Console.WriteLine("Hit");
+            Console.ReadLine();
+        }
+
+        static void Double()
+        {
+            Console.Clear();
+            Console.WriteLine("Double");
+            Console.ReadLine();
+        }
+
+        static void Split()
+        {
+            Console.Clear();
+            Console.WriteLine("Split");
+            Console.ReadLine();
         }
     } // Class
 } // Namespace
