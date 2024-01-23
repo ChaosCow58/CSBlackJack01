@@ -10,8 +10,6 @@ namespace CSBlackJack01
     {
         static int numOfPlayers = 0;
 
-        static int[] numOfChips;
-
         static List<int> playersOutOfRound = new List<int>();
 
         static string[] suits = new string[4]  { "Hearts", "Diamonds", "Clubs", "Spades" };
@@ -44,50 +42,61 @@ namespace CSBlackJack01
                 }
             }
 
-            numOfChips = new int[numOfPlayers];
-
             InitGame();
-               
+
             while (true)
             {
-                int userInput = -1;
-                Console.WriteLine("Exit Program - 0");
+                // Display player information and options
                 foreach (KeyValuePair<int, int> chips in playersBetts)
                 {
-                    if (chips.Value == -1)
+                    int userInput = -1;
+
+                    // Loop for the current player until '2' (Stand) is pressed
+                    while (userInput != 2)
                     {
-                        if (chips.Key > 1)
+                        Console.Clear();
+
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("0 - Exit Program");
+                        Console.ResetColor();
+
+                        if (playersOutOfRound.Contains(chips.Key))
+                        {
+                            Console.WriteLine($"Player {chips.Key}: Is Out.");
+                            break;
+                        }
+
+                        if (chips.Value == -1)
                         {
                             Console.WriteLine($"\nPlayer {chips.Key}: Sitted Out");
                         }
                         else
                         {
-                            Console.WriteLine($"Player {chips.Key}: Sitted Out");
-                        }
-                    }
-                    else
-                    {
-                        if (chips.Key > 1)
-                        {
-                            Console.WriteLine($"{(chips.Value == 1 ? $"\nPlayer {chips.Key}: {chips.Value} chip" : $"\nPlayer {chips.Key}: {chips.Value} chips")}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key}: {chips.Value} chip" : $"Player {chips.Key}: {chips.Value} chips")}");
-                        }
-                        foreach (string card in playerStacks[chips.Key][1])
-                        {
-                            Console.WriteLine(card);
+                            Console.WriteLine($"Player {chips.Key}: ${chips.Value}");
+
+                            foreach (string card in playerStacks[chips.Key][1])
+                            {
+                                Console.WriteLine(card);
+                            }
                         }
 
                         Console.WriteLine("What do you want to do?");
-                        Console.WriteLine("  1 - Hit");
-                        Console.WriteLine("  2 - Stand");
-                        Console.WriteLine("  3 - Double");
-                        Console.WriteLine("  4 - Split");
-                        userInput = Convert.ToInt32(Console.ReadLine());
 
-                       
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("  1 - Hit");
+
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.WriteLine("  2 - Stand");
+
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("  3 - Double");
+
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.WriteLine("  4 - Split");
+
+                        Console.ResetColor();
+
+                        // Display dealer's hand
                         Console.WriteLine("\nDealer:");
                         foreach (string dealerCard in dealersHand)
                         {
@@ -95,19 +104,46 @@ namespace CSBlackJack01
                             Console.WriteLine("Hidden Card");
                         }
 
-                        if (userInput == 0)
+                        userInput:
+                        try
                         {
-                            Console.Clear();
-                            break;
+                            userInput = Convert.ToInt32(Console.ReadLine());
                         }
-                        
+                        catch (FormatException)
+                        {
+                            goto userInput;
+                        }
+
+                        // Process user input and call functions as needed
+                        switch (userInput)
+                        {
+                            case 1:
+                                // Handle Hit
+                                // ...
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                // Handle Double
+                                // ...
+                                break;
+                            // Add cases for other options as needed
+                            // ...
+                            default:
+                                Console.Clear();
+                                goto end;
+
+                        }
                     }
                 }
+                
+                Console.Clear();
                 break;
+
             }
 
-
-            Console.WriteLine("\nPress any key to exit...");
+            end:
+            Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }
 
@@ -145,6 +181,7 @@ namespace CSBlackJack01
             {
                 Console.WriteLine($"Player {i + 1}:");
 
+                userInput:
                 try
                 {
                     Console.Write("  How much do you want to bet (-1 to sit out): ");
@@ -153,13 +190,10 @@ namespace CSBlackJack01
                 catch (FormatException)
                 {
                     Console.WriteLine("Invalid input. Please enter a valid number.");
-                    Console.Write("  How much do you want to bet (-1 to sit out): ");
-                    numBetted = Convert.ToInt32(Console.ReadLine());
+                    goto userInput;
                 }
 
-                numOfChips[i] = 5;
-
-                while (numBetted > numOfChips[i] || numBetted == 0)
+                while (numBetted == 0)
                 {
                     try
                     {
@@ -231,9 +265,9 @@ namespace CSBlackJack01
 
                         foreach (KeyValuePair<int, int> chips in playersBetts)
                         {
-                            if (numOfChips[chips.Key - 1] != -1)
-                            { 
-                                numOfChips[chips.Key - 1] -= chips.Value;
+                            if (chips.Value != -1)
+                            {
+                                playersBetts[chips.Key] -= chips.Value;
                                 Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
                                 InitGame();
                             }
@@ -251,9 +285,9 @@ namespace CSBlackJack01
 
                         foreach (KeyValuePair<int, int> chips in playersBetts)
                         {
-                            if (numOfChips[chips.Key - 1] != -1)
+                            if (chips.Value != -1)
                             {
-                                numOfChips[chips.Key - 1] -= chips.Value;
+                                playersBetts[chips.Key] -= chips.Value;
                                 Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
                                 InitGame();
                             }
@@ -264,9 +298,14 @@ namespace CSBlackJack01
         }
 
         static void PlayersCheck()
+
         {
-            foreach (KeyValuePair<int, int> player in playersBetts)
+            foreach (KeyValuePair<int, int> player in playersBetts.ToList())
             {
+                if (player.Value == -1)
+                {
+                    continue;
+                }
                 foreach (List<string> card in playerStacks[player.Key].Values)
                 { 
                     string cardRank = card[0].Substring(0, card[0].IndexOf(' '));
@@ -282,9 +321,9 @@ namespace CSBlackJack01
                                 Console.ResetColor();
 
                          
-                                if (numOfChips[player.Key - 1] != -1)
+                                if (player.Value != -1)
                                 {
-                                    numOfChips[player.Key - 1] += player.Value;
+                                    playersBetts[player.Key] += player.Value;
                                     Console.WriteLine($"{(player.Value == 1 ? $"Player {player.Key} as gain {player.Value} dollar" : $"Player {player.Key} as gain {player.Value} dollars")}");
                                     playersOutOfRound.Add(player.Key);
                                 }
@@ -301,9 +340,9 @@ namespace CSBlackJack01
                                 Console.ResetColor();
 
 
-                                if (numOfChips[player.Key - 1] != -1)
+                                if (player.Value != -1)
                                 {
-                                    numOfChips[player.Key - 1] += player.Value;
+                                    playersBetts[player.Key] += player.Value;
                                     Console.WriteLine($"{(player.Value == 1 ? $"Player {player.Key} as gain {player.Value} dollar" : $"Player {player.Key} as gain {player.Value} dollars")}");
                                     playersOutOfRound.Add(player.Key);
                                 }
