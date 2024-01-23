@@ -8,10 +8,13 @@ namespace CSBlackJack01
 {
     internal class Program
     {
-        // TODO: Keep track of how much money each player has
         static int numOfPlayers = 0;
 
+        // Player num, money amount
+        static Dictionary<int, int> playerMoneyPool = new Dictionary<int, int>();
+
         static List<int> playersOutOfRound = new List<int>();
+        static List<int> playersOutOfGame = new List<int>();
 
         static string[] suits = new string[4]  { "Hearts", "Diamonds", "Clubs", "Spades" };
         static string[] ranks = new string[13] { "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King" };
@@ -47,10 +50,15 @@ namespace CSBlackJack01
                 }
             }
 
+            for (int i = 1; i <= numOfPlayers; i++)
+            {
+                playerMoneyPool[i] = 1000;
+            }
+
             InitGame();
 
             while (true)
-            { 
+            {
                 // Display player information and options
                 foreach (KeyValuePair<int, int> chips in playersBetts)
                 {
@@ -123,7 +131,6 @@ namespace CSBlackJack01
                         switch (userInput)
                         {
                             case 1:
-                                Console.WriteLine("dddddd");
                                 Hit();
                                 break;
                             case 2:
@@ -154,6 +161,11 @@ namespace CSBlackJack01
 
         static void InitGame()
         {
+            for (int i = 0; i < playersOutOfGame.Count; i++)
+            {
+                playersOutOfRound.Add(playersOutOfGame[i]);
+            }
+
             playersOutOfRound.Clear();
             playerStacks.Clear();
             dealersHand.Clear();
@@ -272,9 +284,13 @@ namespace CSBlackJack01
                         {
                             if (chips.Value != -1)
                             {
-                                playersBetts[chips.Key] -= chips.Value;
-                                Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
-                                InitGame();
+                                if (!playersOutOfGame.Contains(chips.Key))
+                                {
+                                    playerMoneyPool[chips.Key] -= chips.Value;
+                                    Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
+                                    InitGame();
+                                }
+                              
                             }
                         }
                     }
@@ -292,9 +308,12 @@ namespace CSBlackJack01
                         {
                             if (chips.Value != -1)
                             {
-                                playersBetts[chips.Key] -= chips.Value;
-                                Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
-                                InitGame();
+                                if (!playersOutOfGame.Contains(chips.Key))
+                                {
+                                    playerMoneyPool[chips.Key] -= chips.Value;
+                                    Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
+                                    InitGame();
+                                }
                             }
                         }
                     }
@@ -328,9 +347,13 @@ namespace CSBlackJack01
                          
                                 if (player.Value != -1)
                                 {
-                                    playersBetts[player.Key] += player.Value;
-                                    Console.WriteLine($"{(player.Value == 1 ? $"Player {player.Key} as gain {player.Value} dollar" : $"Player {player.Key} as gain {player.Value} dollars")}");
-                                    playersOutOfRound.Add(player.Key);
+                                    if (!playersOutOfGame.Contains(player.Key))
+                                    {
+                                        playerMoneyPool[player.Key] += player.Value;
+                                        Console.WriteLine($"{(player.Value == 1 ? $"Player {player.Key} as gain {player.Value} dollar" : $"Player {player.Key} as gain {player.Value} dollars")}");
+                                        playersOutOfRound.Add(player.Key);
+                                    }
+
                                 }
 
                             }
@@ -347,9 +370,12 @@ namespace CSBlackJack01
 
                                 if (player.Value != -1)
                                 {
-                                    playersBetts[player.Key] += player.Value;
-                                    Console.WriteLine($"{(player.Value == 1 ? $"Player {player.Key} as gain {player.Value} dollar" : $"Player {player.Key} as gain {player.Value} dollars")}");
-                                    playersOutOfRound.Add(player.Key);
+                                    if (!playersOutOfGame.Contains(player.Key))
+                                    {
+                                        playerMoneyPool[player.Key] += player.Value;
+                                        Console.WriteLine($"{(player.Value == 1 ? $"Player {player.Key} as gain {player.Value} dollar" : $"Player {player.Key} as gain {player.Value} dollars")}");
+                                        playersOutOfRound.Add(player.Key);
+                                    }
                                 }
                             }
                         }
