@@ -22,6 +22,10 @@ namespace CSBlackJack01
 
         // Player number, The stack number for that player, the cards for each stack
         static Dictionary<int, Dictionary<int, List<string>>> playerStacks = new Dictionary<int, Dictionary<int, List<string>>>();
+
+        // Player number, Stack number, which card in pile, value
+        static Dictionary<int, Dictionary<int, Dictionary<int, int>>> aceValues = new Dictionary<int, Dictionary<int, Dictionary<int, int>>>();
+
         static List<string> dealersHand = new List<string>();
         static string dealersHiddenCard = string.Empty;
 
