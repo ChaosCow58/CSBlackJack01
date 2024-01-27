@@ -60,9 +60,8 @@ namespace CSBlackJack01
 
             InitGame();
 
-         
             // Display player information and options
-            foreach (KeyValuePair<int, int> chips in playersBetts)
+            foreach (KeyValuePair<int, int> chips in playersBetts.ToList())
             {
                 bool aceChecked = false;
 
@@ -95,7 +94,14 @@ namespace CSBlackJack01
                         break;
                     }
 
-                    Console.WriteLine($"\nPlayer {chips.Key}: ${chips.Value}");
+                    foreach (KeyValuePair<int, int> money in playersBetts.ToList())
+                    {
+                        if (money.Key == currentPlayer)
+                        { 
+                            Console.WriteLine($"\nPlayer {chips.Key}: ${money.Value}");
+                            break;
+                        }
+                    }
 
                     foreach (string card in playerStacks[chips.Key][1])
                     {
@@ -294,7 +300,7 @@ namespace CSBlackJack01
                     goto userInput;
                 }
 
-                while (numBetted == 0)
+                while (numBetted == 0 || numBetted > playerMoneyPool[i + 1])
                 {
                     try
                     {
@@ -482,8 +488,24 @@ namespace CSBlackJack01
         static void Double()
         {
             Console.Clear();
-            Console.WriteLine("Double");
-            Console.ReadLine();
+  
+            playersBetts[currentPlayer] *= 2;
+            if (playersBetts[currentPlayer] > playerMoneyPool[currentPlayer])
+            {
+                playersBetts[currentPlayer] /= 2;
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Player {currentPlayer}: Can not double!");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Player {currentPlayer}: Bet has been doubled!");
+                Console.ResetColor();
+            }
+
+            Console.ReadKey();
         }
 
         static void Split()
