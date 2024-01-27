@@ -10,6 +10,8 @@ namespace CSBlackJack01
 {
     internal class Program
     {
+        static Random random = new Random();
+
         static int numOfPlayers = 0;
         static int currentPlayer = 0;
 
@@ -103,9 +105,29 @@ namespace CSBlackJack01
                         }
                     }
 
-                    foreach (string card in playerStacks[chips.Key][1])
+                    foreach (KeyValuePair<int, List<string>> card in playerStacks[chips.Key].ToList())
                     {
-                        Console.WriteLine(card);
+                        for (int i = 0; i < card.Key; i++)
+                        {
+                            Console.WriteLine($"\n[Stack {i + 1}]:");
+                            for (int j = 0; j < card.Value.Count; j++)
+                            {
+                                string cardRank = card.Value[j].Substring(0, card.Value[j].IndexOf(' '));
+
+                                if (cardRank == "Ace")
+                                {
+                                    if (aceValues.ContainsKey(chips.Key))
+                                    { 
+                                        Console.WriteLine($"{card.Value[j]} - {aceValues[chips.Key][i + 1][j]}");
+                                    }
+                                }
+                                else
+                                { 
+                                    Console.WriteLine(card.Value[j]);
+                                }
+
+                            }
+                        }
                     }
 
                     if (!aceChecked)
@@ -227,6 +249,7 @@ namespace CSBlackJack01
                     {
                         case 1:
                             Hit();
+                            // TODO: Check if the player is busted after hitting
                             break;
                         case 2:
                             // Stand
@@ -319,7 +342,6 @@ namespace CSBlackJack01
 
         static void Deal()
         {
-            Random random = new Random();
 
             Console.Clear();
             for (int i = 0;i < 2;i++)
@@ -382,11 +404,11 @@ namespace CSBlackJack01
                                 {
                                     playerMoneyPool[chips.Key] -= chips.Value;
                                     Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
-                                    InitGame();
                                 }
                               
                             }
                         }
+                        InitGame();
                     }
                 }
                 else
@@ -406,10 +428,10 @@ namespace CSBlackJack01
                                 {
                                     playerMoneyPool[chips.Key] -= chips.Value;
                                     Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
-                                    InitGame();
                                 }
                             }
                         }
+                       InitGame();
                     }
                 }
             }
@@ -478,11 +500,56 @@ namespace CSBlackJack01
             }
         }
 
-        static void Hit()
+        static void Hit(bool isMultipleStacks = false, int numOfStacks = 1)
         {
             Console.Clear();
-            Console.WriteLine("Hit");
-            Console.ReadLine();
+
+            if (!isMultipleStacks)
+            {
+                int beforeLength = playerStacks[currentPlayer][numOfStacks].Count - 1;
+                string cardRank = string.Empty;
+
+                playerStacks[currentPlayer][numOfStacks].Add(deck[random.Next(deck.Count)]);
+                playerStacks[currentPlayer][numOfStacks].Remove(deck[random.Next(deck.Count)]);
+                if (playerStacks[currentPlayer][numOfStacks].Count != beforeLength + 1)
+                { 
+                
+                    cardRank = playerStacks[currentPlayer][numOfStacks][beforeLength + 1].Substring(0, playerStacks[currentPlayer][numOfStacks][beforeLength + 1].IndexOf(' '));
+                }
+                
+                if (cardRank == "Ace")
+                {
+                    Console.WriteLine("What value do you want the Ace to be?");
+
+                hitAceTry:
+                    try
+                    {
+                        Console.WriteLine("  1 or 11");
+                        int aceValue = Convert.ToInt32(Console.ReadLine());
+
+                        if (aceValue != 1 && aceValue != 11)
+                        {
+                            goto hitAceTry;
+                        }
+                        
+                        aceValues[currentPlayer][numOfStacks][beforeLength + 1] = aceValue;
+                    }
+                    catch
+                    { 
+                        goto hitAceTry;
+                    }
+                }
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"You hitted stack {numOfStacks}!");
+            }
+            else 
+            { 
+            
+            }
+
+            Console.ResetColor();
+            Console.ReadKey();
         }
 
         static void Double()
