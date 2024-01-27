@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CSBlackJack01
@@ -9,6 +11,7 @@ namespace CSBlackJack01
     internal class Program
     {
         static int numOfPlayers = 0;
+        static int currentPlayer = 0;
 
         // Player num, money amount
         static Dictionary<int, int> playerMoneyPool = new Dictionary<int, int>();
@@ -19,7 +22,7 @@ namespace CSBlackJack01
         static string[] suits = new string[4]  { "Hearts", "Diamonds", "Clubs", "Spades" };
         static string[] ranks = new string[13] { "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King" };
 
-        static List<string> cards = new List<string>();
+        static List<string> deck = new List<string>();
 
         // Key is which, value the number betted if -1 they skipped
         static Dictionary<int, int> playersBetts = new Dictionary<int, int>();
@@ -57,104 +60,185 @@ namespace CSBlackJack01
 
             InitGame();
 
-            while (true)
+         
+            // Display player information and options
+            foreach (KeyValuePair<int, int> chips in playersBetts)
             {
-                // Display player information and options
-                foreach (KeyValuePair<int, int> chips in playersBetts)
+                bool aceChecked = false;
+
+                currentPlayer = chips.Key;
+
+                if (playersOutOfGame.Contains(chips.Key))
                 {
-                    int userInput = -1;
+                    Console.Clear();
+                    Console.WriteLine($"Player {chips.Key} is out of money");
+                    Thread.Sleep(1000);
+                    continue;
+                }
+                int userInput = -1;
 
-                    // Loop for the current player until '2' (Stand) is pressed
-                    while (userInput != 2)
+                // Loop for the current player until '2' (Stand) is pressed
+                while (userInput != 2)
+                {
+                    Console.Clear();
+
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("0 - Exit Program");
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Player {chips.Key} has ${playerMoneyPool[chips.Key]}");
+
+                    Console.ResetColor();
+                    if (playersOutOfRound.Contains(chips.Key))
                     {
-                        Console.Clear();
+                        Console.WriteLine($"Player {chips.Key}: Is Out.");
+                        break;
+                    }
 
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("0 - Exit Program");
-                        Console.ResetColor();
+                    Console.WriteLine($"\nPlayer {chips.Key}: ${chips.Value}");
 
-                        if (playersOutOfRound.Contains(chips.Key))
+                    foreach (string card in playerStacks[chips.Key][1])
+                    {
+                        Console.WriteLine(card);
+                    }
+
+                    if (!aceChecked)
+                    {
+                        foreach (KeyValuePair<int, List<string>> cardList in playerStacks[chips.Key])
                         {
-                            Console.WriteLine($"Player {chips.Key}: Is Out.");
-                            break;
-                        }
+                            int aceValue = 0;
 
-                        if (chips.Value == -1)
-                        {
-                            Console.WriteLine($"\nPlayer {chips.Key}: Sitted Out");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Player {chips.Key}: ${chips.Value}");
+                            List<string> cards = playerStacks[chips.Key][1];
+                            string cardRank = cards[0].Substring(0, cards[0].IndexOf(' '));
 
-                            foreach (string card in playerStacks[chips.Key][1])
+                            if (!aceValues.ContainsKey(chips.Key))
                             {
-                                Console.WriteLine(card);
+                                aceValues[chips.Key] = new Dictionary<int, Dictionary<int, int>>();
+                                aceValues[chips.Key][1] = new Dictionary<int, int>();
                             }
-                        }
 
-                        Console.WriteLine("What do you want to do?");
 
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("  1 - Hit");
+                            if (cardRank == "Ace")
+                            {
+                                Console.WriteLine("\nWhat value do you want the Ace to be?");
 
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine("  2 - Stand");
+                            aceTry:
+                                try
+                                {
+                                    Console.WriteLine("  1 or 11");
+                                    aceValue = Convert.ToInt32(Console.ReadLine());
 
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("  3 - Double");
+                                    if (aceValue == 0)
+                                    {
+                                        goto end;
+                                    }
 
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Console.WriteLine("  4 - Split");
+                                    if (aceValue != 1 && aceValue != 11)
+                                    {
+                                        goto aceTry;
+                                    }
+                                }
+                                catch
+                                {
+                                    goto aceTry;
+                                }
 
-                        Console.ResetColor();
+                                aceValues[chips.Key][1][0] = aceValue;
+                                aceChecked = true;
+                                Debug.WriteLine(aceValues[chips.Key][1][0]);
+                            }
 
-                        // Display dealer's hand
-                        Console.WriteLine("\nDealer:");
-                        foreach (string dealerCard in dealersHand)
-                        {
-                            Console.WriteLine(dealerCard);
-                            Console.WriteLine("Hidden Card");
-                        }
+                            cardRank = cards[1].Substring(0, cards[1].IndexOf(' '));  
+                            if (cardRank == "Ace")
+                            {
+                                Console.WriteLine("\nWhat value do you want the Ace to be?");
 
-                        userInput:
-                        try
-                        {
-                            userInput = Convert.ToInt32(Console.ReadLine());
-                        }
-                        catch
-                        {
-                            goto userInput;
-                        }
+                            aceTry:
+                                try
+                                {
+                                    Console.WriteLine("  1 or 11");
+                                    aceValue = Convert.ToInt32(Console.ReadLine());
 
-                        // Process user input and call functions as needed
-                        switch (userInput)
-                        {
-                            case 1:
-                                Hit();
-                                break;
-                            case 2:
-                                // Stand
-                                break;
-                            case 3:
-                                Double();
-                                break;
-                            case 4:
-                                Split();
-                                break;
-                            default:
-                                Console.Clear();
-                                goto end;
+                                    if (aceValue == 0)
+                                    {
+                                        goto end;
+                                    }
+
+                                    if (aceValue != 1 && aceValue != 11)
+                                    {
+                                        goto aceTry;
+                                    }
+
+                                }
+                                catch
+                                {
+                                    goto aceTry;
+                                }
+
+                                aceValues[chips.Key][1][1] = aceValue;
+                                aceChecked = true;
+                                Debug.WriteLine(aceValues[chips.Key][1][1]);
+                            } 
                         }
                     }
-                }
+                       
+                    Console.WriteLine("\nWhat do you want to do?");
 
-                Console.Clear();
-                break;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("  1 - Hit");
+
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine("  2 - Stand");
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("  3 - Double");
+
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("  4 - Split");
+
+                    Console.ResetColor();
+
+                    // Display dealer's hand
+                    Console.WriteLine("\nDealer:");
+                    foreach (string dealerCard in dealersHand)
+                    {
+                        Console.WriteLine(dealerCard);
+                        Console.WriteLine("Hidden Card");
+                    }
+
+                    userInput:
+                    try
+                    {
+                        userInput = Convert.ToInt32(Console.ReadLine());
+                    }
+                    catch
+                    {
+                        goto userInput;
+                    }
+
+                    // Process user input and call functions as needed
+                    switch (userInput)
+                    {
+                        case 1:
+                            Hit();
+                            break;
+                        case 2:
+                            // Stand
+                            break;
+                        case 3:
+                            Double();
+                            break;
+                        case 4:
+                            Split();
+                            break;
+                        default:
+                            goto end;
+                    }
+                }
             }
-         
 
             end:
+            Console.Clear();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }
@@ -185,7 +269,7 @@ namespace CSBlackJack01
             {
                 foreach (string rank in ranks)
                 {
-                    cards.Add($"{rank} of {suit}");
+                    deck.Add($"{rank} of {suit}");
                 }
             }
         }
@@ -236,6 +320,10 @@ namespace CSBlackJack01
             {
                 foreach (KeyValuePair<int, int> chips in playersBetts)
                 {
+                    if (playersOutOfGame.Contains(chips.Key))
+                    {
+                        continue;
+                    }
                     if (chips.Value > 0)
                     {
                         if (!playerStacks.ContainsKey(chips.Key))
@@ -244,23 +332,23 @@ namespace CSBlackJack01
                             playerStacks[chips.Key][1] = new List<string>();
                         }
                          
-                        int randNumDict = random.Next(cards.Count);
-                        playerStacks[chips.Key][1].Add(cards[randNumDict]);
-                        cards.RemoveAt(randNumDict);
+                        int randNumDict = random.Next(deck.Count);
+                        playerStacks[chips.Key][1].Add(deck[randNumDict]);
+                        deck.RemoveAt(randNumDict);
                     }
                 }
 
-                int randNum = random.Next(cards.Count);
+                int randNum = random.Next(deck.Count);
 
                 if (i == 0)
                 {
-                    dealersHand.Add(cards[randNum]);
-                    cards.RemoveAt(randNum);
+                    dealersHand.Add(deck[randNum]);
+                    deck.RemoveAt(randNum);
                 }
                 else
                 {
-                    dealersHiddenCard = cards[randNum];
-                    cards.RemoveAt(randNum);
+                    dealersHiddenCard = deck[randNum];
+                    deck.RemoveAt(randNum);
                 }
 
             }
