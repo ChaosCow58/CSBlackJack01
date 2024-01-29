@@ -62,8 +62,9 @@ namespace CSBlackJack01
 
             InitGame();
 
+            Thread.Sleep(5);
+
             // Display player information and options
-            
             foreach (KeyValuePair<int, Dictionary<int, int>> chips in playersBetts.ToList())
             {
                 bool aceChecked = false;
@@ -292,6 +293,8 @@ namespace CSBlackJack01
 
                             if (playerStacks[currentPlayer].Keys.Count > 1)
                             {
+                                Console.Clear();
+                                PrintCards();
 
                                 Console.WriteLine("\nWhich stack do you want to hit?");
 
@@ -635,11 +638,11 @@ namespace CSBlackJack01
                 }
 
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"You hitted stack {numOfStacks}!");
+                Console.WriteLine($"Player {currentPlayer} hitted stack {numOfStacks}!");
             }
             else 
             {
-                StringBuilder sb = new StringBuilder("You hitted stacks ");
+                StringBuilder sb = new StringBuilder($"Player {currentPlayer} hitted stacks ");
 
                 for (int i = 0; i < numOfStacks; i++)
                 {
@@ -706,18 +709,17 @@ namespace CSBlackJack01
         {
             Console.Clear();
   
-            playersBetts[currentPlayer][stackNum] *= 2;
-            if (playersBetts[currentPlayer][stackNum] > playerMoneyPool[currentPlayer])
+            if (playersBetts[currentPlayer][stackNum] * 2 > playerMoneyPool[currentPlayer])
             {
-                playersBetts[currentPlayer][stackNum] /= 2;
-
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Player {currentPlayer}: Can not double!");
+                Console.WriteLine($"Player {currentPlayer} can not double!");
             }
             else
             {
+                playersBetts[currentPlayer][stackNum] *= 2;
+
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"Player {currentPlayer}: Bet has been doubled!");
+                Console.WriteLine($"Player {currentPlayer} has doubled stack {stackNum}!");
             }
 
             Console.ResetColor();
@@ -756,12 +758,12 @@ namespace CSBlackJack01
                 Hit(true, 2);
 
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"PLayer {currentPlayer}: Has splitted!");
+                Console.WriteLine($"PLayer {currentPlayer} has splitted!");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"PLayer {currentPlayer}: Can not split!");
+                Console.WriteLine($"PLayer {currentPlayer} can not split!");
             }
 
             Console.ResetColor();
