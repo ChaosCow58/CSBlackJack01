@@ -1,5 +1,4 @@
-﻿using Microsoft.SqlServer.Server;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -27,8 +26,8 @@ namespace CSBlackJack01
 
         static List<string> deck = new List<string>();
 
-        // Key is which, value the number betted if -1 they skipped
-        static Dictionary<int, int> playersBetts = new Dictionary<int, int>();
+        // Key is which player, what stack the bet is on ,value the number betted if -1 they skipped
+        static Dictionary<int, Dictionary<int, int>> playersBetts = new Dictionary<int,Dictionary<int, int>>();
 
         // Player number, The stack number for that player, the cards for each stack
         static Dictionary<int, Dictionary<int, List<string>>> playerStacks = new Dictionary<int, Dictionary<int, List<string>>>();
@@ -64,11 +63,15 @@ namespace CSBlackJack01
             InitGame();
 
             // Display player information and options
-            foreach (KeyValuePair<int, int> chips in playersBetts.ToList())
+            
+            foreach (KeyValuePair<int, Dictionary<int, int>> chips in playersBetts.ToList())
             {
                 bool aceChecked = false;
+                bool canSplit = true;
 
                 currentPlayer = chips.Key;
+
+                Debug.WriteLine(currentPlayer);
 
                 if (playersOutOfGame.Contains(chips.Key))
                 {
@@ -77,6 +80,15 @@ namespace CSBlackJack01
                     Thread.Sleep(1000);
                     continue;
                 }
+
+                if (playersBetts[currentPlayer][1] == -1)
+                {
+                    Console.Clear();
+                    Console.WriteLine($"PLayer {currentPlayer} has sitted out.");
+                    Thread.Sleep(1000);
+                    continue;
+                }
+
                 int userInput = -1;
 
                 // Loop for the current player until '2' (Stand) is pressed
@@ -88,29 +100,21 @@ namespace CSBlackJack01
                     Console.WriteLine("0 - Exit Program");
 
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"Player {chips.Key} has ${playerMoneyPool[chips.Key]}");
+                    Console.WriteLine($"Player {chips.Key} has ${playerMoneyPool[chips.Key]}\n");
 
                     Console.ResetColor();
+
                     if (playersOutOfRound.Contains(chips.Key))
                     {
                         Console.WriteLine($"Player {chips.Key}: Is Out.");
                         break;
                     }
 
-                    foreach (KeyValuePair<int, int> money in playersBetts.ToList())
-                    {
-                        if (money.Key == currentPlayer)
-                        { 
-                            Console.WriteLine($"\nPlayer {chips.Key}: ${money.Value}");
-                            break;
-                        }
-                    }
-
-                    printAces();
+                    PrintCards();
 
                     if (!aceChecked)
                     {
-                        foreach (KeyValuePair<int, List<string>> cardList in playerStacks[chips.Key])
+                        foreach (KeyValuePair<int, List<string>> cardList in playerStacks[chips.Key].ToList())
                         {
                             int aceValue = 0;
 
@@ -184,10 +188,23 @@ namespace CSBlackJack01
                                 aceValues[chips.Key][1][1] = aceValue;
                                 aceChecked = true;
                                 Debug.WriteLine(aceValues[chips.Key][1][1]);
-                            } 
+                            }        
                         }
+
+                        Console.Clear();
+
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("0 - Exit Program");
+
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"Player {chips.Key} has ${playerMoneyPool[chips.Key]}\n");
+
+                        Console.ResetColor();
+
+                        PrintCards();
                     }
-                       
+
+
                     Console.WriteLine("\nWhat do you want to do?");
 
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -199,8 +216,11 @@ namespace CSBlackJack01
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("  3 - Double");
 
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine("  4 - Split");
+                    if (canSplit)
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.WriteLine("  4 - Split");
+                    }
 
                     Console.ResetColor();
 
@@ -231,7 +251,8 @@ namespace CSBlackJack01
 
                             if (playerStacks[currentPlayer].Keys.Count > 1)
                             {
-                                printAces();
+                                Console.Clear();
+                                PrintCards();
 
                                 Console.WriteLine("\nWhich stack do you want to hit?");
 
@@ -250,24 +271,63 @@ namespace CSBlackJack01
                                     goto stackTry;
                                 }
 
+                                
+
                                 Hit(false, stackNum);
                             }
                             else
                             {
+                                Console.Clear();
                                 Hit(false, 1);
                             }
+
+                            canSplit = false;
                             // TODO: Check if the player is busted after hitting
                             break;
                         case 2:
                             // Stand
                             break;
                         case 3:
-                            Double();
+                            int doubleStackNum = 1;
+
+                            if (playerStacks[currentPlayer].Keys.Count > 1)
+                            {
+
+                                Console.WriteLine("\nWhich stack do you want to hit?");
+
+                            stackTry:
+                                try
+                                {
+                                    doubleStackNum = Convert.ToInt32(Console.ReadLine());
+
+                                    if (doubleStackNum > playerStacks[currentPlayer].Keys.Count)
+                                    {
+                                        goto stackTry;
+                                    }
+                                }
+                                catch
+                                {
+                                    goto stackTry;
+                                }
+
+                                Double(doubleStackNum);
+                            }
+                            else
+                            {
+                                Double(1);
+                            }
+
+                            canSplit = false;
+
                             break;
                         case 4:
-                            Split();
+                            if (canSplit)
+                            { 
+                                Split();
+                                canSplit = false;
+                            }
                             break;
-                        default:
+                        case 0:
                             goto end;
                     }
                 }
@@ -343,7 +403,12 @@ namespace CSBlackJack01
                     }
                 }
 
-                playersBetts[i + 1] = numBetted;
+                if (!playersBetts.ContainsKey(i + 1))
+                {
+                    playersBetts[i + 1] = new Dictionary<int, int>();
+                }
+
+                playersBetts[i + 1][1] = numBetted;
             }
         }
 
@@ -353,13 +418,13 @@ namespace CSBlackJack01
             Console.Clear();
             for (int i = 0;i < 2;i++)
             {
-                foreach (KeyValuePair<int, int> chips in playersBetts)
+                foreach (KeyValuePair<int, Dictionary<int, int>> chips in playersBetts)
                 {
                     if (playersOutOfGame.Contains(chips.Key))
                     {
                         continue;
                     }
-                    if (chips.Value > 0)
+                    if (chips.Value[1] > 0)
                     {
                         if (!playerStacks.ContainsKey(chips.Key))
                         { 
@@ -403,14 +468,14 @@ namespace CSBlackJack01
                         Console.WriteLine("Dealer has a blackjack.");
                         Console.ResetColor();
 
-                        foreach (KeyValuePair<int, int> chips in playersBetts.ToList())
+                        foreach (KeyValuePair<int, Dictionary<int, int>> chips in playersBetts.ToList())
                         {
-                            if (chips.Value != -1)
+                            if (chips.Value[1] != -1)
                             {
                                 if (!playersOutOfGame.Contains(chips.Key))
                                 {
-                                    playerMoneyPool[chips.Key] -= chips.Value;
-                                    Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
+                                    playerMoneyPool[chips.Key] -= chips.Value[1];
+                                    Console.WriteLine($"{(chips.Value[1] == 1 ? $"Player {chips.Key} as lost {chips.Value[1]} dollar" : $"Player {chips.Key} as lost {chips.Value[1]} dollars")}");
                                 }
                               
                             }
@@ -427,14 +492,14 @@ namespace CSBlackJack01
                         Console.WriteLine("Dealer has a blackjack.");
                         Console.ResetColor();
 
-                        foreach (KeyValuePair<int, int> chips in playersBetts.ToList())
+                        foreach (KeyValuePair<int, Dictionary<int, int>> chips in playersBetts.ToList())
                         {
-                            if (chips.Value != -1)
+                            if (chips.Value[1] != -1)
                             {
                                 if (!playersOutOfGame.Contains(chips.Key))
                                 {
-                                    playerMoneyPool[chips.Key] -= chips.Value;
-                                    Console.WriteLine($"{(chips.Value == 1 ? $"Player {chips.Key} as lost {chips.Value} dollar" : $"Player {chips.Key} as lost {chips.Value} dollars")}");
+                                    playerMoneyPool[chips.Key] -= chips.Value[1];
+                                    Console.WriteLine($"{(chips.Value[1] == 1 ? $"Player {chips.Key} as lost {chips.Value[1]} dollar" : $"Player {chips.Key} as lost {chips.Value[1]} dollars")}");
                                 }
                             }
                         }
@@ -445,11 +510,10 @@ namespace CSBlackJack01
         }
 
         static void PlayersCheck()
-
         {
-            foreach (KeyValuePair<int, int> player in playersBetts.ToList())
+            foreach (KeyValuePair<int, Dictionary<int, int>> player in playersBetts.ToList())
             {
-                if (player.Value == -1)
+                if (player.Value[1] == -1)
                 {
                     continue;
                 }
@@ -468,12 +532,12 @@ namespace CSBlackJack01
                                 Console.ResetColor();
 
                          
-                                if (player.Value != -1)
+                                if (player.Value[1] != -1)
                                 {
                                     if (!playersOutOfGame.Contains(player.Key))
                                     {
-                                        playerMoneyPool[player.Key] += player.Value;
-                                        Console.WriteLine($"{(player.Value == 1 ? $"Player {player.Key} as gain {player.Value} dollar" : $"Player {player.Key} as gain {player.Value} dollars")}");
+                                        playerMoneyPool[player.Key] += player.Value[1];
+                                        Console.WriteLine($"{(player.Value[1] == 1 ? $"Player {player.Key} as gain {player.Value[1]} dollar" : $"Player {player.Key} as gain {player.Value[1]} dollars")}");
                                         playersOutOfRound.Add(player.Key);
                                     }
 
@@ -491,12 +555,12 @@ namespace CSBlackJack01
                                 Console.ResetColor();
 
 
-                                if (player.Value != -1)
+                                if (player.Value[1] != -1)
                                 {
                                     if (!playersOutOfGame.Contains(player.Key))
                                     {
-                                        playerMoneyPool[player.Key] += player.Value;
-                                        Console.WriteLine($"{(player.Value == 1 ? $"Player {player.Key} as gain {player.Value} dollar" : $"Player {player.Key} as gain {player.Value} dollars")}");
+                                        playerMoneyPool[player.Key] += player.Value[1];
+                                        Console.WriteLine($"{(player.Value[1] == 1 ? $"Player {player.Key} as gain {player.Value[1]} dollar" : $"Player {player.Key} as gain {player.Value[1]} dollars")}");
                                         playersOutOfRound.Add(player.Key);
                                     }
                                 }
@@ -507,31 +571,28 @@ namespace CSBlackJack01
             }
         }
 
-        static void printAces()
+        static void PrintCards()
         {
             foreach (KeyValuePair<int, List<string>> card in playerStacks[currentPlayer].ToList())
             {
-                for (int i = 0; i < card.Key; i++)
+                Console.WriteLine($"{(card.Key == 1 ? $"[Stack {card.Key}]: - ${playersBetts[currentPlayer][card.Key]}" : $"\n[Stack {card.Key}]: - ${playersBetts[currentPlayer][card.Key]}")}");
+                
+                for (int j = 0; j < card.Value.Count; j++)
                 {
-                    Console.WriteLine($"\n[Stack {i + 1}]:");
-                    for (int j = 0; j < card.Value.Count; j++)
+                    string cardRank = card.Value[j].Substring(0, card.Value[j].IndexOf(' '));
+
+                    if (cardRank == "Ace")
                     {
-                        string cardRank = card.Value[j].Substring(0, card.Value[j].IndexOf(' '));
-
-                        if (cardRank == "Ace")
+                        if (aceValues.ContainsKey(currentPlayer))
                         {
-                            if (aceValues.ContainsKey(currentPlayer))
-                            {
-                                Console.WriteLine($"{card.Value[j]} - {aceValues[currentPlayer][i + 1][j]}");
-                            }
+                            Console.WriteLine($"{card.Value[j]} - {aceValues[currentPlayer][card.Key][j]}");
                         }
-                        else
-                        {
-                            Console.WriteLine(card.Value[j]);
-                        }
-
                     }
-                }
+                    else
+                    {
+                        Console.WriteLine(card.Value[j]);
+                    }
+                } 
             }
         }
 
@@ -540,26 +601,13 @@ namespace CSBlackJack01
             int beforeLength = playerStacks[currentPlayer][numOfStacks].Count - 1;
             string cardRank = string.Empty;
 
-            Console.Clear();
-
             if (!isMultipleStacks)
             {
-                //if (!playerStacks[currentPlayer].ContainsKey(numOfStacks))
-                //{
-                //    playerStacks[currentPlayer] = new Dictionary<int, List<string>>();
-                //    foreach (string card in playerStacks[currentPlayer][numOfStacks - 1])
-                //    {
-                //        playerStacks[currentPlayer][numOfStacks].Add(card);
-                //    }
-                //}
-
-
                 playerStacks[currentPlayer][numOfStacks].Add(deck[random.Next(deck.Count)]);
                 playerStacks[currentPlayer][numOfStacks].Remove(deck[random.Next(deck.Count)]);
 
                 if (playerStacks[currentPlayer][numOfStacks].Count != beforeLength + 1)
                 { 
-                
                     cardRank = playerStacks[currentPlayer][numOfStacks][beforeLength + 1].Substring(0, playerStacks[currentPlayer][numOfStacks][beforeLength + 1].IndexOf(' '));
                 }
                 
@@ -595,12 +643,13 @@ namespace CSBlackJack01
 
                 for (int i = 0; i < numOfStacks; i++)
                 {
+                    beforeLength = playerStacks[currentPlayer][i + 1].Count;
+
                     playerStacks[currentPlayer][i + 1].Add(deck[random.Next(deck.Count)]);
                     playerStacks[currentPlayer][i + 1].Remove(deck[random.Next(deck.Count)]);
 
-                    if (playerStacks[currentPlayer][numOfStacks].Count != beforeLength + 1)
+                    if (playerStacks[currentPlayer][numOfStacks].Count > beforeLength + 1)
                     {
-
                         cardRank = playerStacks[currentPlayer][numOfStacks][beforeLength + 1].Substring(0, playerStacks[currentPlayer][numOfStacks][beforeLength + 1].IndexOf(' '));
                     }
 
@@ -653,34 +702,68 @@ namespace CSBlackJack01
             Console.ReadKey();
         }
 
-        static void Double()
+        static void Double(int stackNum)
         {
             Console.Clear();
   
-            playersBetts[currentPlayer] *= 2;
-            if (playersBetts[currentPlayer] > playerMoneyPool[currentPlayer])
+            playersBetts[currentPlayer][stackNum] *= 2;
+            if (playersBetts[currentPlayer][stackNum] > playerMoneyPool[currentPlayer])
             {
-                playersBetts[currentPlayer] /= 2;
+                playersBetts[currentPlayer][stackNum] /= 2;
 
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Player {currentPlayer}: Can not double!");
-                Console.ResetColor();
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"Player {currentPlayer}: Bet has been doubled!");
-                Console.ResetColor();
             }
 
+            Console.ResetColor();
             Console.ReadKey();
         }
 
         static void Split()
         {
             Console.Clear();
-            Console.WriteLine("Split");
-            Console.ReadLine();
+
+            string cardRank1 = playerStacks[currentPlayer][1][0].Substring(0, playerStacks[currentPlayer][1][0].IndexOf(' '));
+            string cardRank2 = playerStacks[currentPlayer][1][1].Substring(0, playerStacks[currentPlayer][1][1].IndexOf(' '));
+
+            if (cardRank1 == cardRank2 && playersBetts[currentPlayer][1] * 2 <= playerMoneyPool[currentPlayer])
+            {
+                if (!playerStacks.ContainsKey(currentPlayer))
+                {
+                    playerStacks[currentPlayer] = new Dictionary<int, List<string>>();
+                }
+
+                if (!playerStacks[currentPlayer].ContainsKey(2))
+                {
+                    playerStacks[currentPlayer][2] = new List<string>();
+                }
+
+                if (!playersBetts.ContainsKey(2))
+                {
+                    playersBetts[currentPlayer] = new Dictionary<int, int>();
+                }
+
+                playerStacks[currentPlayer][2].Add(playerStacks[currentPlayer][1][1]);
+                playersBetts[currentPlayer][2] = playersBetts[currentPlayer][1];
+
+                Hit(true, 2);
+
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"PLayer {currentPlayer}: Has splitted!");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"PLayer {currentPlayer}: Can not split!");
+            }
+
+            Console.ResetColor();
+            Console.ReadKey();
         }
     } // Class
 } // Namespace
