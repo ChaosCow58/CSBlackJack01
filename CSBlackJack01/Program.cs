@@ -749,6 +749,8 @@ namespace CSBlackJack01
                 }
 
                 playerStacks[currentPlayer][2].Add(playerStacks[currentPlayer][1][1]);
+                playerStacks[currentPlayer][1].Remove(playerStacks[currentPlayer][1][1]);
+
                 playersBetts[currentPlayer][2] = playersBetts[currentPlayer][1];
 
                 Hit(true, 2);
