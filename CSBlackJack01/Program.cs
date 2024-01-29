@@ -40,6 +40,62 @@ namespace CSBlackJack01
 
         static void Main(string[] args)
         {
+            int startUser = 0;
+            
+            while (startUser != 1)
+            {
+                Console.Clear();
+
+                Console.WriteLine("===========================");
+                Console.Write("|  Welcome to Black");
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("Jack");
+                Console.ResetColor();
+
+                Console.Write("   |\n");
+
+                Console.WriteLine("===========================");
+
+                Console.WriteLine("\nWhat you like to do?");
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("(0) - Exit Program");
+                Console.ResetColor();
+
+                Console.WriteLine("(1) - Play");
+                Console.WriteLine("(2) - Rules");
+
+            beginningTry:
+                try
+                {
+                    startUser = Convert.ToInt32(Console.ReadLine());
+
+                    if (startUser != 1 && startUser != 2 && startUser != 0)
+                    {
+                        goto beginningTry;
+                    }
+                }
+                catch
+                {
+                    goto beginningTry;
+                }
+
+                switch (startUser)
+                {
+                    case 1:
+                        break;
+                    case 2:
+                        Rules();
+                        break;
+                    default:
+                        goto end;
+                }
+
+            }
+          
+            Console.Clear();
+
             PopulateCards();
 
             while (numOfPlayers > 7 || numOfPlayers < 1)
@@ -261,7 +317,7 @@ namespace CSBlackJack01
                                 try
                                 {
                                     stackNum = Convert.ToInt32(Console.ReadLine());
-
+                                     
                                     if (stackNum > playerStacks[currentPlayer].Keys.Count)
                                     { 
                                         goto stackTry;
@@ -271,8 +327,6 @@ namespace CSBlackJack01
                                 { 
                                     goto stackTry;
                                 }
-
-                                
 
                                 Hit(false, stackNum);
                             }
@@ -370,6 +424,38 @@ namespace CSBlackJack01
                 {
                     deck.Add($"{rank} of {suit}");
                 }
+            }
+        }
+
+        static void Rules()
+        {
+            int rulesInput = -1;
+
+            Console.Clear();
+
+            while (rulesInput != 0)
+            {
+                // TODO: Adjust Rules
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("(0) - Back");
+                Console.ResetColor();
+
+                Console.WriteLine("1. \x1b[1mDoubling Down:\x1b[0m");
+                Console.WriteLine("   - \x1b[1mWhen:\x1b[0m You can double down after being dealt the first two cards.");
+                Console.WriteLine("   - \x1b[1mHow:\x1b[0m Place an additional bet (equal to your original bet) and receive one more card.");
+                Console.WriteLine("   - \x1b[1mStrategy:\x1b[0m Often done with initial hand values of 9, 10, or 11.");
+
+                Console.WriteLine("\n2. \x1b[1mHitting:\x1b[0m");
+                Console.WriteLine("   - \x1b[1mWhen:\x1b[0m After receiving the first two cards, choose to 'hit' and get additional cards.");
+                Console.WriteLine("   - \x1b[1mHow:\x1b[0m Continue hitting until you decide to stand, reach 21, or bust (exceed 21).");
+                Console.WriteLine("   - \x1b[1mStrategy:\x1b[0m Typically hit when hand is below 17.");
+
+                Console.WriteLine("\n3. \x1b[1mSplitting:\x1b[0m");
+                Console.WriteLine("   - \x1b[1mWhen:\x1b[0m If first two cards are of the same rank, you can split them into two hands.");
+                Console.WriteLine("   - \x1b[1mHow:\x1b[0m Place an additional bet for the second hand, and play each hand independently.");
+                Console.WriteLine("   - \x1b[1mStrategy:\x1b[0m Often split pairs of 8s and Aces. Avoid splitting 10s, 5s, and 4s.");
+
+                rulesInput = Convert.ToInt32(Console.ReadLine());
             }
         }
 
@@ -768,6 +854,21 @@ namespace CSBlackJack01
 
             Console.ResetColor();
             Console.ReadKey();
+        }
+
+        static void RevealDealersHand()
+        { 
+            
+        }
+
+        static void CountPlayerCards()
+        { 
+        
+        }
+
+        static void CountDealersHand()
+        { 
+        
         }
     } // Class
 } // Namespace
