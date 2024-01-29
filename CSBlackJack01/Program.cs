@@ -69,7 +69,7 @@ namespace CSBlackJack01
             beginningTry:
                 try
                 {
-                    startUser = Convert.ToInt32(Console.ReadLine());
+                    startUser = int.Parse(Console.ReadKey().KeyChar.ToString());
 
                     if (startUser != 1 && startUser != 2 && startUser != 0)
                     {
@@ -97,6 +97,10 @@ namespace CSBlackJack01
             Console.Clear();
 
             PopulateCards();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("All players have $1000 to start!\n");
+            Console.ResetColor();
 
             while (numOfPlayers > 7 || numOfPlayers < 1)
             {
@@ -292,7 +296,7 @@ namespace CSBlackJack01
                     userInput:
                     try
                     {
-                        userInput = Convert.ToInt32(Console.ReadLine());
+                        userInput = int.Parse(Console.ReadKey().KeyChar.ToString());
                     }
                     catch
                     {
@@ -455,7 +459,7 @@ namespace CSBlackJack01
                 Console.WriteLine("   - \x1b[1mHow:\x1b[0m Place an additional bet for the second hand, and play each hand independently.");
                 Console.WriteLine("   - \x1b[1mStrategy:\x1b[0m Often split pairs of 8s and Aces. Avoid splitting 10s, 5s, and 4s.");
 
-                rulesInput = Convert.ToInt32(Console.ReadLine());
+                rulesInput = int.Parse(Console.ReadKey().KeyChar.ToString());
             }
         }
 
