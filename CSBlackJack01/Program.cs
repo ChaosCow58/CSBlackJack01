@@ -81,6 +81,8 @@ namespace CSBlackJack01
                     goto beginningTry;
                 }
 
+                Thread.Sleep(50);
+
                 switch (startUser)
                 {
                     case 1:
@@ -121,8 +123,6 @@ namespace CSBlackJack01
             }
 
             InitGame();
-
-            Thread.Sleep(5);
 
             // Display player information and options
             foreach (KeyValuePair<int, Dictionary<int, int>> chips in playersBetts.ToList())
@@ -302,6 +302,8 @@ namespace CSBlackJack01
                     {
                         goto userInput;
                     }
+
+                    Thread.Sleep(100);
 
                     // Process user input and call functions as needed
                     switch (userInput)
