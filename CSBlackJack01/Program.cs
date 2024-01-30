@@ -868,7 +868,7 @@ namespace CSBlackJack01
             Console.ResetColor();
             Console.ReadKey();
         }
-
+ 
         static void CountPlayerCards(bool isEndOfRound)
         {
             foreach (KeyValuePair<int, List<string>> card in playerStacks[currentPlayer].ToList())
@@ -1023,7 +1023,7 @@ namespace CSBlackJack01
             {
                 Console.WriteLine("The Dealer has busted!");
 
-                foreach (KeyValuePair<int, Dictionary<int, int>> player in playersBetts)
+                foreach (KeyValuePair<int, Dictionary<int, int>> player in playersBetts.ToList())
                 {   
                     Console.WriteLine($"Player {player.Key} has gained ${playersBetts[player.Key][1]} on stack 1.");
                     playerMoneyPool[player.Key] += playersBetts[player.Key][1];
@@ -1038,7 +1038,7 @@ namespace CSBlackJack01
             }
             else
             {
-                foreach (KeyValuePair<int, Dictionary<int, int>> player in playersBetts)
+                foreach (KeyValuePair<int, Dictionary<int, int>> player in playersBetts.ToList())
                 {
                     if (playerScore[player.Key][1] > dealersScore)
                     {
