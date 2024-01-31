@@ -1050,7 +1050,7 @@ namespace CSBlackJack01
             }
 
         dealerEnd:
-            if (dealersScore >= 21)
+            if (dealersScore > 21)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("\nThe Dealer has busted!");
