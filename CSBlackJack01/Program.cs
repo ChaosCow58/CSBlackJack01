@@ -154,7 +154,7 @@ namespace CSBlackJack01
 
                     if (playersBetts[currentPlayer][1] == -1)
                     {
-                        Console.Clear();                            Console.WriteLine($"Player {chips.Key}
+                        Console.Clear();
                         Console.WriteLine($"PLayer {currentPlayer} has sitted out.");
                         Thread.Sleep(1000);
                         continue;
