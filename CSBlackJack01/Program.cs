@@ -154,7 +154,7 @@ namespace CSBlackJack01
 
                     if (playersBetts[currentPlayer][1] == -1)
                     {
-                        Console.Clear();
+                        Console.Clear();                            Console.WriteLine($"Player {chips.Key}
                         Console.WriteLine($"PLayer {currentPlayer} has sitted out.");
                         Thread.Sleep(1000);
                         continue;
@@ -177,7 +177,9 @@ namespace CSBlackJack01
 
                         if (playersOutOfRound.Contains(chips.Key))
                         {
-                            Console.WriteLine($"Player {chips.Key}: Is Out.");
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                            Console.WriteLine($"Player {chips.Key} is out of the round!");
+                            Console.ResetColor();
                             break;
                         }
 
@@ -1175,6 +1177,16 @@ namespace CSBlackJack01
                         Console.ForegroundColor = ConsoleColor.DarkRed;
                         Console.WriteLine($"Player {player.Key} has lost ${playersBetts[player.Key][2]} on stack 2.");
                         playerMoneyPool[player.Key] -= playersBetts[player.Key][2];
+                    }
+                    else if (playerScore[player.Key][1] == dealersScore)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"Player {player.Key} has tied on stack 1.");
+                    }
+                    else if (playerScore[player.Key].ContainsKey(2) && playerScore[player.Key][2] == dealersScore)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"Player {player.Key} has tied on stack 2.");
                     }
                 }
 
