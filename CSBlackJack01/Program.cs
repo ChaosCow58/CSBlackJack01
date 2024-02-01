@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace CSBlackJack01
 {
@@ -464,6 +464,10 @@ namespace CSBlackJack01
             PlayersCheck();
         }
 
+        /// <summary>
+        /// The function "PopulateCards" populates a deck of cards by iterating through each suit and rank
+        /// and adding the corresponding card to the deck.
+        /// </summary>
         static void PopulateCards()
         {
             foreach (string suit in suits)
@@ -508,6 +512,10 @@ namespace CSBlackJack01
             }
         }
 
+        /// <summary>
+        /// The function allows players to set the amount they want to bet, with the option to sit out by
+        /// entering -1.
+        /// </summary>
         static void SetPlayerAmount()
         {
             int numBetted;
@@ -595,6 +603,9 @@ namespace CSBlackJack01
             }
         }
 
+        /// <summary>
+        /// The function `DealerCheck` checks if the dealer has a blackjack based on their hand and hidden card.
+        /// </summary>
         static void DealerCheck()
         {
             string cardRank = dealersHand[0].Substring(0, dealersHand[0].IndexOf(' '));
@@ -650,6 +661,10 @@ namespace CSBlackJack01
             }
         }
 
+       /// <summary>
+       /// The function "PlayersCheck" checks if any player has a blackjack based on their card ranks
+       /// and updates their money pool accordingly.
+       /// </summary>
         static void PlayersCheck()
         {
             foreach (KeyValuePair<int, Dictionary<int, int>> player in playersBetts.ToList())
@@ -735,8 +750,17 @@ namespace CSBlackJack01
                     }
                 }
             }
-        }
-
+        }        
+        
+       /// <summary>
+       /// The function "Hit" adds a card to a player's stack(s) and removes a card from the deck, and
+       /// also handles the case when an Ace card is drawn.
+       /// </summary>
+       /// <param name="isMultipleStacks">A boolean value indicating whether the player is hitting
+       /// multiple stacks or not.</param>
+       /// <param name="numOfStacks">The `numOfStacks` parameter represents the number of stacks that
+       /// the player wants to hit. It is used to determine how many stacks the player will hit in the
+       /// `Hit` method.</param>
         static void Hit(bool isMultipleStacks, int numOfStacks)
         {
             int beforeLength = playerStacks[currentPlayer][numOfStacks].Count - 1;
@@ -776,11 +800,11 @@ namespace CSBlackJack01
                 }
 
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Player {currentPlayer} hitted stack {numOfStacks}!");
+                Console.WriteLine($"Player {currentPlayer} hit stack {numOfStacks}!");
             }
             else
             {
-                StringBuilder sb = new StringBuilder($"Player {currentPlayer} hitted stacks ");
+                StringBuilder sb = new StringBuilder($"Player {currentPlayer} hit stacks ");
 
                 for (int i = 0; i < numOfStacks; i++)
                 {
@@ -843,6 +867,12 @@ namespace CSBlackJack01
             Thread.Sleep(1000);
         }
 
+     /// <summary>
+     /// The function "Double" allows a player to double their bet on a specific stack if they have
+     /// enough money in their money pool.
+     /// </summary>
+     /// <param name="stackNum">The parameter `stackNum` represents the stack number that the player
+     /// wants to double their bet on.</param>
         static void Double(int stackNum)
         {
             Console.Clear();
@@ -864,6 +894,11 @@ namespace CSBlackJack01
             Thread.Sleep(1000);
         }
 
+        /// <summary>
+        /// The Split function checks if a player's two cards have the same rank and if they have enough
+        /// money to split, and if so, it splits the cards into two separate stacks and updates the bet
+        /// accordingly.
+        /// </summary>
         static void Split()
         {
             Console.Clear();
@@ -908,6 +943,14 @@ namespace CSBlackJack01
             Thread.Sleep(1000);
         }
 
+        /// <summary>
+        /// The function "CountPlayerCards" calculates the score of each player's cards and checks if any player
+        /// has busted.
+        /// </summary>
+        /// <param name="isEndOfRound">The parameter `isEndOfRound` is a boolean value that indicates whether it
+        /// is the end of the round or not. It is used to determine whether to skip players other than the
+        /// current player when calculating the player scores. If `isEndOfRound` is `true`, the scores for
+        /// all</param>
         static void CountPlayerCards(bool isEndOfRound)
         {
             foreach (KeyValuePair<int, Dictionary<int, List<string>>> playerEntry in playerStacks)
@@ -999,6 +1042,10 @@ namespace CSBlackJack01
             Console.ReadKey();
         }
 
+       /// <summary>
+       /// The `DealersHand` function calculates the score of the dealer's hand in a blackjack game and
+       /// determines the outcome of the round for each player.
+       /// </summary>
         static void DealersHand()
         {
             int dealersScore = 0;
