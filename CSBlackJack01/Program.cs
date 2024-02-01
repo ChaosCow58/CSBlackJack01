@@ -103,8 +103,6 @@ namespace CSBlackJack01
 
             Console.Clear();
 
-            PopulateCards();
-
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("All players have $1000 to start!\n");
             Console.ResetColor();
@@ -404,7 +402,7 @@ namespace CSBlackJack01
                                     canSplit = false;
                                 }
                                 break;
-                            case 0:
+                            default:
                                 goto end;
                         }
                     }
@@ -453,6 +451,10 @@ namespace CSBlackJack01
             playerStacks.Clear();
             dealersHand.Clear();
             dealersHiddenCard = string.Empty;
+
+            deck.Clear();
+
+            PopulateCards();
 
             SetPlayerAmount();
 
@@ -512,7 +514,11 @@ namespace CSBlackJack01
 
             for (int i = 0; i < numOfPlayers; i++)
             {
-                Console.WriteLine($"Player {i + 1}:");
+                Console.Write($"Player {i + 1}: - ");
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($"${playerMoneyPool[i + 1]}\n");
+                Console.ResetColor();
 
             userInput:
                 try
@@ -834,7 +840,7 @@ namespace CSBlackJack01
             }
 
             Console.ResetColor();
-            Console.ReadKey();
+            Thread.Sleep(1000);
         }
 
         static void Double(int stackNum)
@@ -855,7 +861,7 @@ namespace CSBlackJack01
             }
 
             Console.ResetColor();
-            Console.ReadKey();
+            Thread.Sleep(1000);
         }
 
         static void Split()
@@ -899,85 +905,94 @@ namespace CSBlackJack01
             }
 
             Console.ResetColor();
-            Console.ReadKey();
+            Thread.Sleep(1000);
         }
- 
+
         static void CountPlayerCards(bool isEndOfRound)
         {
-            foreach (KeyValuePair<int, List<string>> card in playerStacks[currentPlayer].ToList())
+            foreach (KeyValuePair<int, Dictionary<int, List<string>>> playerEntry in playerStacks)
             {
-                if (!playerScore.ContainsKey(currentPlayer))
+                int currentPlayer1 = playerEntry.Key;
+
+                if (!isEndOfRound && currentPlayer1 != currentPlayer)
                 {
-                    playerScore[currentPlayer] = new Dictionary<int, int>();
+                    continue; // Skip players other than the current player when not at the end of the round
                 }
 
-                if (!playerScore[currentPlayer].ContainsKey(card.Key))
+                foreach (KeyValuePair<int, List<string>> card in playerEntry.Value)
                 {
-                    playerScore[currentPlayer][card.Key] = 0;
+                    if (!playerScore.ContainsKey(currentPlayer1))
+                    {
+                        playerScore[currentPlayer1] = new Dictionary<int, int>();
+                    }
+
+                    if (!playerScore[currentPlayer1].ContainsKey(card.Key))
+                    {
+                        playerScore[currentPlayer1][card.Key] = 0;
+                    }
+
+                    for (int j = 0; j < card.Value.Count; j++)
+                    {
+                        string cardRank = card.Value[j].Substring(0, card.Value[j].IndexOf(' '));
+
+                        if (cardRank == "King" || cardRank == "Queen" || cardRank == "Jack" || cardRank == "10")
+                        {
+                            playerScore[currentPlayer1][card.Key] += 10;
+                        }
+                        else if (cardRank == "Ace")
+                        {
+                            playerScore[currentPlayer1][card.Key] += aceValues[currentPlayer1][card.Key][j];
+                        }
+                        else
+                        {
+                            playerScore[currentPlayer1][card.Key] += int.Parse(cardRank);
+                        }
+                    }
                 }
 
-                for (int j = 0; j < card.Value.Count; j++)
-                {
-                    string cardRank = card.Value[j].Substring(0, card.Value[j].IndexOf(' '));
+                Debug.WriteLine(playerScore[currentPlayer1][1]);
 
-                    if (cardRank == "King" || cardRank == "Queen" || cardRank == "Jack" || cardRank == "10")
-                    {
-                        playerScore[currentPlayer][card.Key] += 10;
-                    }
-                    else if (cardRank == "Ace")
-                    {
-                        playerScore[currentPlayer][card.Key] += aceValues[currentPlayer][card.Key][j];
-                    }
-                    else
-                    {
-                        playerScore[currentPlayer][card.Key] += int.Parse(cardRank);
-                    }
+                if (playerScore[currentPlayer1][1] > 21)
+                {
+                    Console.Clear();
+                    PrintCards();
+
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"\nPlayer {currentPlayer1} has busted!");
+
+                    playerMoneyPool[currentPlayer1] -= playersBetts[currentPlayer][1];
+
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine($"Player {currentPlayer1} has lost {playersBetts[currentPlayer1][1]} dollars.");
+                    Console.ResetColor();
+
+                    playersOutOfRound.Add(currentPlayer1);
                 }
-            }
-
-            Debug.WriteLine(playerScore[currentPlayer][1]);
-
-            if (playerScore[currentPlayer][1] >= 21)
-            {
-                Console.Clear();
-                PrintCards();
-
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"\nPlayer {currentPlayer} has busted!");
-
-                playerMoneyPool[currentPlayer] -= playersBetts[currentPlayer][1];
-
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"Player {currentPlayer} has lost {playersBetts[currentPlayer][1]} dollars.");
-                Console.ResetColor();
-
-                playersOutOfRound.Add(currentPlayer);
-
-            }
-            else if (playerScore[currentPlayer].ContainsKey(2) && playerScore[currentPlayer][2] >= 21)
-            {
-                Console.Clear();
-                PrintCards();
-
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"\nPlayer {currentPlayer} has busted!");
-
-                playerMoneyPool[currentPlayer] -= playersBetts[currentPlayer][2];
-
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"Player {currentPlayer} has lost {playersBetts[currentPlayer][2]} dollars.");
-                Console.ResetColor();
-
-                playersOutOfRound.Add(currentPlayer);
-            }
-
-            if (!isEndOfRound)
-            {
-                playerScore[currentPlayer][1] = 0;
-
-                if (playerScore[currentPlayer].ContainsKey(2))
+                else if (playerScore[currentPlayer1].ContainsKey(2) && playerScore[currentPlayer1][2] > 21)
                 {
-                    playerScore[currentPlayer][2] = 0;
+                    Console.Clear();
+                    PrintCards();
+
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"\nPlayer {currentPlayer1} has busted!");
+
+                    playerMoneyPool[currentPlayer1] -= playersBetts[currentPlayer1][2];
+
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine($"Player {currentPlayer1} has lost {playersBetts[currentPlayer1][2]} dollars.");
+                    Console.ResetColor();
+
+                    playersOutOfRound.Add(currentPlayer1);
+                }
+
+                if (!isEndOfRound)
+                {
+                    playerScore[currentPlayer1][1] = 0;
+
+                    if (playerScore[currentPlayer1].ContainsKey(2))
+                    {
+                        playerScore[currentPlayer1][2] = 0;
+                    }
                 }
             }
 
@@ -1050,7 +1065,7 @@ namespace CSBlackJack01
             }
 
         dealerEnd:
-            if (dealersScore >= 21)
+            if (dealersScore > 21)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("\nThe Dealer has busted!");
