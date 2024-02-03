@@ -435,7 +435,7 @@ namespace CSBlackJack01
 
         static void InitGame()
         {
-            foreach (KeyValuePair<int, int> player in playerMoneyPool)
+            foreach (KeyValuePair<int, int> player in playerMoneyPool.ToList())
             {
                 if (playerMoneyPool[player.Key] <= 0)
                 {
@@ -451,6 +451,7 @@ namespace CSBlackJack01
 
             playersOutOfRound.Clear();
             playerStacks.Clear();
+            playerScore.Clear();
             dealersHand.Clear();
             dealersHiddenCard = string.Empty;
 
@@ -663,7 +664,7 @@ namespace CSBlackJack01
             }
         }
 
-       /// <summary>
+        /// <summary>
        /// The function "PlayersCheck" checks if any player has a blackjack based on their card ranks
        /// and updates their money pool accordingly.
        /// </summary>
@@ -741,7 +742,7 @@ namespace CSBlackJack01
 
                     if (cardRank == "Ace")
                     {
-                        if (aceValues.ContainsKey(currentPlayer))
+                        if (aceValues.ContainsKey(currentPlayer) && aceValues[currentPlayer].ContainsKey(card.Key))
                         {
                             Console.WriteLine($"{card.Value[j]} - {aceValues[currentPlayer][card.Key][j]}");
                         }
@@ -754,7 +755,7 @@ namespace CSBlackJack01
             }
         }        
         
-       /// <summary>
+         /// <summary>
        /// The function "Hit" adds a card to a player's stack(s) and removes a card from the deck, and
        /// also handles the case when an Ace card is drawn.
        /// </summary>
@@ -869,7 +870,7 @@ namespace CSBlackJack01
             Thread.Sleep(1000);
         }
 
-     /// <summary>
+        /// <summary>
      /// The function "Double" allows a player to double their bet on a specific stack if they have
      /// enough money in their money pool.
      /// </summary>
@@ -959,6 +960,11 @@ namespace CSBlackJack01
             {
                 int currentPlayer1 = playerEntry.Key;
 
+                if (playersOutOfRound.Contains(playerEntry.Key))
+                {
+                    continue;
+                }
+
                 if (!isEndOfRound && currentPlayer1 != currentPlayer)
                 {
                     continue; // Skip players other than the current player when not at the end of the round
@@ -984,19 +990,20 @@ namespace CSBlackJack01
                         {
                             playerScore[currentPlayer1][card.Key] += 10;
                         }
-                        else if (cardRank == "Ace")
-                        {
-                            playerScore[currentPlayer1][card.Key] += aceValues[currentPlayer1][card.Key][j];
-                        }
-                        else
+                        if (ConatinsNumber2To9(cardRank))
                         {
                             playerScore[currentPlayer1][card.Key] += int.Parse(cardRank);
+                        }
+                        if (cardRank == "Ace")
+                        {
+                            playerScore[currentPlayer1][card.Key] += aceValues[currentPlayer1][card.Key][j];
                         }
                     }
                 }
 
                 Debug.WriteLine(playerScore[currentPlayer1][1]);
 
+                
                 if (playerScore[currentPlayer1][1] > 21)
                 {
                     Console.Clear();
@@ -1039,6 +1046,7 @@ namespace CSBlackJack01
                         playerScore[currentPlayer1][2] = 0;
                     }
                 }
+                Debug.WriteLine($"${playerMoneyPool[currentPlayer1]}");
             }
 
             Console.ReadKey();
@@ -1061,7 +1069,6 @@ namespace CSBlackJack01
                 foreach (string dealerCard in dealersHand)
                 {
                     string cardRank = dealerCard.Substring(0, dealerCard.IndexOf(' '));
-
 
                     if (cardRank == "King" || cardRank == "Queen" || cardRank == "Jack" || cardRank == "10")
                     {
